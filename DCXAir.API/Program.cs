@@ -6,6 +6,7 @@ using DCXAir.API.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<List<Journey>>(provider =>
 {
     try
