@@ -6,49 +6,47 @@ using DCXAir.API.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<List<JourneyDto>>(provider =>
+builder.Services.AddSingleton<List<Journey>>(provider =>
 {
     try
     {
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), "markets.json");
-        var flights = JourneyDataLoader.LoadFlights(filePath); // Cargar vuelos
-        var journeyDtos = flights
-            .GroupBy(f => new { f.Origin, f.Destination }) // Agrupar vuelos por origen y destino
-            .Select(g => new JourneyDto
+        var flights = JourneyDataLoader.LoadFlights(filePath); 
+        var journeys = flights
+            .GroupBy(f => new { f.Origin, f.Destination })
+            .Select(g => new Journey
             {
-                Type = "One Way", // O puedes usar una lógica más avanzada para determinar el tipo
-                Flights = g.Select(f => new FlightDto
+                Fligths = g.Select(f => new Flight
                 {
                     Origin = f.Origin,
                     Destination = f.Destination,
                     Price = f.Price,
-                    Transport = new List<TransportDto>
+                    Transport = new Transport
                     {
-                        new TransportDto { FlightCarrier = f.Transport.FlightCarrier, FlightNumber = f.Transport.FlightNumber }
+                        FlightCarrier = f.Transport.FlightCarrier,
+                        FlightNumber = f.Transport.FlightNumber
                     }
-                }).ToList(),
-                TotalPrice = g.Sum(f => f.Price)
-            }).ToList();
+                }).ToList()
+            })
+            .ToList();
 
-        return journeyDtos;
+        return journeys;
     }
     catch (Exception ex)
     {
         Console.WriteLine($"Error al cargar el archivo markets.json: {ex.Message}");
-        return new List<JourneyDto>();
+        return new List<Journey>();
     }
 });
 
 builder.Services.AddScoped<IJourneyService, JourneyService>();
 
-// Configurar controladores
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configurar el pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
