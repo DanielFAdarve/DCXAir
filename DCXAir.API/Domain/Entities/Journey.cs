@@ -2,6 +2,7 @@
 {
     public class Journey
     {
+        public int Id { get; set; }
         public List<Flight> Fligths { get; set; } = new();
         public string Origin => Fligths.FirstOrDefault()?.Origin;
         public string Destination => Fligths.LastOrDefault()?.Destination;

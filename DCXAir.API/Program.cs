@@ -3,6 +3,8 @@ using DCXAir.API.Application.Services;
 using DCXAir.API.Application.DTOs;
 using DCXAir.Infrastructure.Data;
 using DCXAir.API.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using DCXAir.API.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +41,10 @@ builder.Services.AddSingleton<List<Journey>>(provider =>
         return new List<Journey>();
     }
 });
+
+builder.Services.AddDbContext<JourneyDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
 builder.Services.AddScoped<IJourneyService, JourneyService>();
 
