@@ -10,15 +10,6 @@
 	},
 	{
 		"Origin": "MZL",
-		"Destination": "BOG",
-		"Price": 1500.0,
-		"Transport": {
-			"FlightCarrier": "AV",
-			"FlightNumber": "8021"
-		}
-	},
-	{
-		"Origin": "MZL",
 		"Destination": "PEI",
 		"Price": 1000.0,
 		"Transport": {
