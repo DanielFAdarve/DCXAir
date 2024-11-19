@@ -15,40 +15,41 @@ namespace DCXAir.API.Application.Services
             _journeys = journeys;
         }
 
-        public List<JourneyDto> GetFligths(string origin, string destination, string type, string currency)
+        public ApiResponseDto GetFligths(string origin, string destination, string type, string currency)
         {
+            var journeys = new ApiResponseDto();
+
             if (type == "one-way")
             {
-                return GetOneWayFlights(origin, destination, type, currency);
+                journeys = GetOneWayFlights(origin, destination, type, currency);
             }
             else if (type == "round-trip")
             {
-                return GetRoundTripFlights(origin, destination, type, currency);
+                journeys = GetRoundTripFlights(origin, destination, type, currency);
             }
-            else
+
+            var response = new ApiResponseDto
             {
-                return new List<JourneyDto>();
-            }
+                Origin = origin,
+                Destination = destination,
+                Currency = currency,
+                TotalRoutes = journeys.TotalRoutes, 
+                Journeys = journeys.Journeys
+            };
+
+            return response;
         }
-        
 
-       
-        public List<JourneyDto> GetOneWayFlights(string origin, string destination,string type, string currency)
+
+
+        public ApiResponseDto GetOneWayFlights(string origin, string destination, string type, string currency)
         {
-            var journeys = new List<Journey>();
+            var journeys = new List<JourneyDto>();
 
-          
             var directJourneys = _journeys.Where(j => j.Fligths.Any(f => f.Origin == origin && f.Destination == destination)).ToList();
-            journeys.AddRange(directJourneys);
-
-      
-            var connectingJourneys = GetFlightsWithStops(origin, destination, currency);
-            journeys.AddRange(connectingJourneys);
-
-    
-            return journeys.Select(j => new JourneyDto
+            journeys.AddRange(directJourneys.Select(j => new JourneyDto
             {
-                Type = j.Fligths.Count == 1 ? "One Way" : "With Stops", 
+                Type = $"{type}-direct",
                 Flights = j.Fligths.Select(f => new FlightDto
                 {
                     Origin = f.Origin,
@@ -56,26 +57,52 @@ namespace DCXAir.API.Application.Services
                     Price = f.Price,
                     Currency = currency,
                     Transport = new List<TransportDto>
-                    {
-                        new TransportDto
-                        {
-                            FlightCarrier = f.Transport.FlightCarrier,
-                            FlightNumber = f.Transport.FlightNumber
-                        }
-                    }
-               
-                     }).ToList(),
+            {
+                new TransportDto
+                {
+                    FlightCarrier = f.Transport.FlightCarrier,
+                    FlightNumber = f.Transport.FlightNumber
+                }
+            }
+                }).ToList(),
                 TotalPrice = j.Price
-            }).ToList();
+            }));
+
+            var connectingJourneys = GetFlightsWithStops(origin, destination, currency);
+            journeys.AddRange(connectingJourneys.Select(j => new JourneyDto
+            {
+                Type = $"{type}-connecting",
+                Flights = j.Fligths.Select(f => new FlightDto
+                {
+                    Origin = f.Origin,
+                    Destination = f.Destination,
+                    Price = f.Price,
+                    Currency = currency,
+                    Transport = new List<TransportDto>
+            {
+                new TransportDto
+                {
+                    FlightCarrier = f.Transport.FlightCarrier,
+                    FlightNumber = f.Transport.FlightNumber
+                }
+            }
+                }).ToList(),
+                TotalPrice = j.Price
+            }));
+
+            return new ApiResponseDto
+            {
+                Origin = origin,
+                Destination = destination,
+                Currency = currency,
+                TotalRoutes = journeys.Count,
+                Journeys = journeys
+            };
         }
 
         public List<Journey> GetFlightsWithStops(string origin, string destination, string currency)
         {
             var journeys = new List<Journey>();
-
-            var directJourneys = _journeys.Where(j => j.Fligths.Any(f => f.Origin == origin && f.Destination == destination)).ToList();
-            journeys.AddRange(directJourneys);
-
 
             var connectingJourneys = _journeys.Where(j => j.Fligths.Any(f => f.Origin == origin)).ToList();
             foreach (var journey in connectingJourneys)
@@ -100,12 +127,10 @@ namespace DCXAir.API.Application.Services
             return journeys;
         }
 
-        public List<JourneyDto> GetRoundTripFlights(string origin, string destination,string type, string currency)
+        public ApiResponseDto GetRoundTripFlights(string origin, string destination, string type, string currency)
         {
- 
-            var outboundJourneys = GetOneWayFlights(origin, destination,type, currency);
-
-            var returnJourneys = GetOneWayFlights(destination, origin,type, currency);
+            var outboundJourneys = GetOneWayFlights(origin, destination, type, currency).Journeys;
+            var returnJourneys = GetOneWayFlights(destination, origin, type, currency).Journeys;
 
             var roundTripJourneys = new List<JourneyDto>();
 
@@ -115,16 +140,24 @@ namespace DCXAir.API.Application.Services
                 {
                     var roundTripJourney = new JourneyDto
                     {
+                        Type = type,
                         Flights = outbound.Flights.Concat(inbound.Flights).ToList(),
-                        TotalPrice = outbound.TotalPrice + inbound.TotalPrice 
+                        TotalPrice = outbound.TotalPrice + inbound.TotalPrice
                     };
                     roundTripJourneys.Add(roundTripJourney);
                 }
             }
 
-            return roundTripJourneys;
+            return new ApiResponseDto
+            {
+                Origin = origin,
+                Destination = destination,
+                Currency = currency,
+                TotalRoutes = roundTripJourneys.Count,
+                Journeys = roundTripJourneys
+            };
         }
 
-        
+
     }
 }
