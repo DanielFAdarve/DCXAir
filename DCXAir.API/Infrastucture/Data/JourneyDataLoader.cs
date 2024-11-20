@@ -1,16 +1,17 @@
-﻿
-
-namespace DCXAir.Infrastructure.Data;
-    
+﻿namespace DCXAir.Infrastructure.Data
+{
+    using DCXAir.API.Application.Interfaces; 
     using System.Text.Json;
     using DCXAir.API.Domain.Entities;
-    public class JourneyDataLoader
+
+
+    public class JourneyDataLoader : IJourneyDataLoader
     {
-        public static List<Flight> LoadFlights(string filePath)
+
+        public List<Flight> LoadFlights(string filePath)
         {
             try
             {
-
                 if (!File.Exists(filePath))
                 {
                     throw new FileNotFoundException($"File not found in PATH : {filePath}");
@@ -46,4 +47,5 @@ namespace DCXAir.Infrastructure.Data;
                 throw;
             }
         }
+    }
 }

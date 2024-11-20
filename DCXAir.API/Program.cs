@@ -1,20 +1,38 @@
 using DCXAir.API.Application.Interfaces;
 using DCXAir.API.Application.Services;
-using DCXAir.API.Application.DTOs;
-using DCXAir.Infrastructure.Data;
-using DCXAir.API.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using DCXAir.API.Infrastructure.Data;
+using DCXAir.API.Application.Repositories;
+using DCXAir.API.Domain.Entities;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using DCXAir.Infrastructure.Data;
+using DCXAir.API.Application.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMemoryCache();
+builder.Services.AddDbContext<JourneyDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+var mapperConfig = new MapperConfiguration(mc =>
+{
+    mc.AddProfile(new MappingProfile());
+});
+
+IMapper mapper = mapperConfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
+builder.Services.AddScoped<IJourneyRepository, JourneyRepository>();
+builder.Services.AddScoped<IJourneyService, JourneyService>();
+builder.Services.AddScoped<IJourneyDataLoader, JourneyDataLoader>();
+
+
 builder.Services.AddSingleton<List<Journey>>(provider =>
 {
     try
     {
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), "markets.json");
-        var flights = JourneyDataLoader.LoadFlights(filePath); 
+        var journeyDataLoader = provider.GetRequiredService<IJourneyDataLoader>();
+        var flights = journeyDataLoader.LoadFlights(filePath);
         var journeys = flights
             .GroupBy(f => new { f.Origin, f.Destination })
             .Select(g => new Journey
@@ -37,16 +55,10 @@ builder.Services.AddSingleton<List<Journey>>(provider =>
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Error al cargar el archivo markets.json: {ex.Message}");
+        Console.WriteLine($"Error Loading markets.json: {ex.Message}");
         return new List<Journey>();
     }
 });
-
-builder.Services.AddDbContext<JourneyDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
-
-builder.Services.AddScoped<IJourneyService, JourneyService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -61,9 +73,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
