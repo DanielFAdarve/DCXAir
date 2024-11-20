@@ -1,6 +1,4 @@
-﻿
-
-namespace DCXAir.API.Presentation.Controllers
+﻿namespace DCXAir.API.Presentation.Controllers
 {
     using DCXAir.API.Application.DTOs;
     using DCXAir.API.Application.Interfaces;
@@ -8,18 +6,21 @@ namespace DCXAir.API.Presentation.Controllers
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Caching.Memory;
     using DCXAir.API.Application.Services;
+    using DCXAir.API.Application.Repositories;
 
     [ApiController]
     [Route("api/[controller]")]
     public class FlightController : ControllerBase
     {
-        private readonly JourneyService _journeyService;
+        private readonly IJourneyService _journeyService;
+        private readonly IJourneyRepository _journeyRepository;
 
         private readonly IMemoryCache _cache;
 
-        public FlightController(JourneyService journey, IMemoryCache cache)
+        public FlightController(IJourneyService journey, IMemoryCache cache,IJourneyRepository journeyRepository)
         {
             _journeyService = journey;
+            _journeyRepository = journeyRepository;
             _cache = cache;
         }
 
@@ -44,6 +45,19 @@ namespace DCXAir.API.Presentation.Controllers
             Console.WriteLine("Data load in memory");
             return Ok(journeys);
 
+        }
+
+        [HttpGet("check-data")]
+        public async Task<IActionResult> CheckData()
+        {
+            var journeys = await _journeyRepository.GetAllJourneysAsync();
+
+            if (journeys.Count == 0)
+            {
+                return NotFound("No Journeys in DB.");
+            }
+
+            return Ok($"There are {journeys.Count} journeys in DB.");
         }
     }
 }

@@ -2,6 +2,7 @@
 using DCXAir.API.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DCXAir.API.Migrations
 {
     [DbContext(typeof(JourneyDbContext))]
-    partial class JourneyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241120050748_InitialCreateTablesBackend")]
+    partial class InitialCreateTablesBackend
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
