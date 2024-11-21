@@ -24,7 +24,7 @@
             modelBuilder.Entity<Flight>()
                 .HasOne(f => f.Transport)
                 .WithOne()
-                .HasForeignKey<Transport>(t => t.Id); 
+                .HasForeignKey<Flight>(t => t.Id); 
         }
     }
 }

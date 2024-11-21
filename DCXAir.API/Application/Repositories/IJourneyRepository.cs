@@ -10,5 +10,6 @@
 
         Task<List<Journey>> GetJourneysWithStopsAsync(string origin, string destination);
         Task<List<Journey>> GetAllJourneysAsync();
+        Task AddJourneyAsync(Journey journey);
     }
 }

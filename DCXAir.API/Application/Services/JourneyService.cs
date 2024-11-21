@@ -12,10 +12,10 @@
 
     public class JourneyService : IJourneyService
     {
-        private readonly IJourneyRepository _journeyRepository; 
-        private readonly IMapper _mapper; 
+        private readonly IJourneyRepository _journeyRepository;
+        private readonly IMapper _mapper;
 
-        public JourneyService(IJourneyRepository journeyRepository,IMapper mapper)
+        public JourneyService(IJourneyRepository journeyRepository, IMapper mapper)
         {
             _journeyRepository = journeyRepository;
             _mapper = mapper;
@@ -47,8 +47,8 @@
             return response;
         }
 
-       
-        public async Task<List<JourneyDto>> GetOneWayFlights(string origin, string destination,string type, string currency)
+
+        public async Task<List<JourneyDto>> GetOneWayFlights(string origin, string destination, string type, string currency)
         {
             var directJourneys = await _journeyRepository.GetJourneysByOriginAndDestinationAsync(origin, destination);
 
@@ -61,14 +61,14 @@
                     Destination = f.Destination,
                     Price = f.Price,
                     Currency = currency,
-                    Transport = f.Transport != null ? new List<TransportDto>
+                            Transport = f.Transport != null ? new List<TransportDto>
+                {
+                    new TransportDto
                     {
-                        new TransportDto
-                        {
-                            FlightCarrier = f.Transport.FlightCarrier,
-                            FlightNumber = f.Transport.FlightNumber
-                        }
-                    } : new List<TransportDto>()
+                        FlightCarrier = f.Transport.FlightCarrier,
+                        FlightNumber = f.Transport.FlightNumber
+                    }
+                } : new List<TransportDto>()
                 }).ToList() ?? new List<FlightDto>(),
                 TotalPrice = j.Price
             }).ToList();
@@ -80,7 +80,7 @@
             return directJourneyDtos;
         }
 
-        public async Task<List<JourneyDto>> GetRoundTripFlights(string origin, string destination,string type, string currency)
+        public async Task<List<JourneyDto>> GetRoundTripFlights(string origin, string destination, string type, string currency)
         {
             var outboundJourneys = await GetOneWayFlights(origin, destination, type, currency);
 
@@ -107,7 +107,6 @@
 
         public async Task<List<JourneyDto>> GetFlightsWithStops(string origin, string destination, string currency)
         {
-
             var connectingJourneys = await _journeyRepository.GetJourneysWithStopsAsync(origin, destination);
 
             var journeyDtos = connectingJourneys.Select(j => new JourneyDto
@@ -120,13 +119,13 @@
                     Price = f.Price,
                     Currency = currency,
                     Transport = f.Transport != null ? new List<TransportDto>
-                    {
-                        new TransportDto
-                        {
-                            FlightCarrier = f.Transport.FlightCarrier,
-                            FlightNumber = f.Transport.FlightNumber
-                        }
-                    } : new List<TransportDto>()
+            {
+                new TransportDto
+                {
+                    FlightCarrier = f.Transport.FlightCarrier,
+                    FlightNumber = f.Transport.FlightNumber
+                }
+            } : new List<TransportDto>()
                 }).ToList() ?? new List<FlightDto>(),
                 TotalPrice = j.Price
             }).ToList();
@@ -134,6 +133,5 @@
             return journeyDtos;
         }
 
-       
     }
 }

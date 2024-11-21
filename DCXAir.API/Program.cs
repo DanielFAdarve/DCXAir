@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using DCXAir.Infrastructure.Data;
 using DCXAir.API.Application.Mappings;
+using Microsoft.Data.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ builder.Services.AddSingleton(mapper);
 builder.Services.AddScoped<IJourneyRepository, JourneyRepository>();
 builder.Services.AddScoped<IJourneyService, JourneyService>();
 builder.Services.AddScoped<IJourneyDataLoader, JourneyDataLoader>();
+
 
 
 builder.Services.AddSingleton<List<Journey>>(provider =>
