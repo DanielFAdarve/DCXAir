@@ -2,11 +2,9 @@
 {
     using DCXAir.API.Application.DTOs;
     using DCXAir.API.Application.Interfaces;
-    using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+    using DCXAir.API.Application.Repositories;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Caching.Memory;
-    using DCXAir.API.Application.Services;
-    using DCXAir.API.Application.Repositories;
 
     [ApiController]
     [Route("api/[controller]")]
@@ -17,7 +15,7 @@
 
         private readonly IMemoryCache _cache;
 
-        public FlightController(IJourneyService journey, IMemoryCache cache,IJourneyRepository journeyRepository)
+        public FlightController(IJourneyService journey, IMemoryCache cache, IJourneyRepository journeyRepository)
         {
             _journeyService = journey;
             _journeyRepository = journeyRepository;
@@ -29,7 +27,8 @@
         public async Task<IActionResult> GetFligths(string origin, string destination, string type, string currency = "USD")
         {
             var cacheKey = $"{origin}-{destination}-{type}-{currency}";
-            if (_cache.TryGetValue(cacheKey, out IEnumerable<JourneyDto> cachedJourneys)) {
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<JourneyDto> cachedJourneys))
+            {
                 Console.WriteLine("Data taked from memory");
                 return Ok(cachedJourneys);
             }
